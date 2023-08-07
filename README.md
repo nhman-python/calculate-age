@@ -4,6 +4,7 @@
 הורד את הקוד:
 ```
 git clone https://github.com/nhman-python/calculate-age.git
+cd calculate-age
 ```
 
 התקן את הספריות הנצרכות:
