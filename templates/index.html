@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <title>מחשב גיל</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            direction:rtl;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            direction:rtl;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="date"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            direction: ltr;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            direction:rtl;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .result label {
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .result input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100px;
+        }
+
+        .error {
+            color: #ff0000;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>מחשב גיל</h1>
+    <form id="ageForm" method="POST">
+        {{ form.csrf_token }}
+        <div class="form-group">
+            <label for="birth_date">תאריך לידה:</label>
+            {{ form.birth_date() }}
+        </div>
+        <input type="submit" value="חשב">
+    </form>
+    <div id="result" class="result">
+        <div class="form-group">
+            <label for="seconds">שניות שעברו:</label>
+            <input type="text" id="seconds" readonly>
+        </div>
+        <div class="form-group">
+            <label for="days">ימים שעברו:</label>
+            <input type="text" id="days" readonly>
+        </div>
+        <div class="form-group">
+            <label for="years">אתה בן:</label>
+            <input type="text" id="years" readonly>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('ageForm');
+        const resultDiv = document.getElementById('result');
+        const birthDateInput = document.getElementById('birth_date');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        const secondsInput = document.getElementById('seconds');
+                        const daysInput = document.getElementById('days');
+                        const yearsInput = document.getElementById('years');
+
+                        secondsInput.value = response.seconds;
+                        daysInput.value = response.days;
+                        yearsInput.value = response.years;
+                        birthDateInput.value = ""; // Clear the birth date input
+                        resultDiv.classList.add('active');
+                    } else {
+                        const secondsInput = document.getElementById('seconds');
+                        const daysInput = document.getElementById('days');
+                        const yearsInput = document.getElementById('years');
+
+                        secondsInput.value = "";
+                        daysInput.value = "";
+                        yearsInput.value = "";
+                        birthDateInput.value = ""; // Clear the birth date input
+                        resultDiv.innerHTML = `<h2 class="error">Error: ${xhr.statusText}</h2>`;
+                    }
+                }
+            };
+            xhr.open('POST', '/');
+            xhr.setRequestHeader('X-CSRFToken', formData.get('csrf_token'));
+            xhr.send(formData);
+        });
+    });
+</script>
+</body>
+</html>
